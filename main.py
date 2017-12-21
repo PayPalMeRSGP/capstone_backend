@@ -1,5 +1,6 @@
 from flask import Flask #pip install flask
 from flask import jsonify
+from flask import request
 from urllib2 import Request, urlopen, URLError #pip install urllib2
 import xml.etree.ElementTree as ET #pip install ElementTree
 import zulu  #pip install zulu
@@ -19,19 +20,34 @@ IMAGE_LEVEL_XML_TAG_TARGET = '{http://s3.amazonaws.com/doc/2006-03-01/}Contents'
 S3_BASE_URL = 'http://psyche-andromeda.s3.amazonaws.com/'
 
 
-Folder_To_Its_Image_Urls_Dict = {}
+
 
 @app.route('/')
-def hello_world():
-    main()
-    return jsonify(Folder_To_Its_Image_Urls_Dict)
+def base_page_handler():
+    output = main()
+    return jsonify(output)
+
+@app.route('/filter')
+def unix_timestamp_get_request_handler():
+    s3_data = main()
+    s3_filtered_data = {}
+    last_update_timestamp = request.args.get('last_update', default=0, type=long)
+    for folder in s3_data:
+        asset_list = s3_data[folder]
+        for idx, asset in enumerate(asset_list):
+            if asset.upload_time > last_update_timestamp:
+                s3_filtered_data[folder] = asset_list[idx:]
+                break
+    return jsonify(s3_filtered_data)
 
 
 def main():
+    folder__to__assets__dict = {}
     folders_list = retrieve_folder_list() #get a list of every folder...
     for folder in folders_list: #for every folder...
         folder_images_list = retrieve_folder_images_urls(folder) #get a list of images names...
-        Folder_To_Its_Image_Urls_Dict[folder] = folder_images_list
+        folder__to__assets__dict[folder] = folder_images_list
+    return folder__to__assets__dict
     
 
 
@@ -68,11 +84,11 @@ def retrieve_folder_images_urls(folderStr):
                     asset_list.append(asset)
                     
                 skip_folder_flag = True
-        return asset_list
+        return sorted(asset_list, key=lambda asset: asset.upload_time)
 
     except URLError, error:
         print 'Got an error code:', error
 
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True, use_debugger=False, use_reloader=False)
