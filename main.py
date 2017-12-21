@@ -2,9 +2,10 @@ from flask import Flask #pip install flask
 from flask import jsonify
 from urllib2 import Request, urlopen, URLError #pip install urllib2
 import xml.etree.ElementTree as ET #pip install ElementTree
-import sortedcontainers.sorteddict as ordered_map #pip install sortedcontainers
 import zulu  #pip install zulu
+import folder_asset
 app = Flask(__name__)
+app.json_encoder = folder_asset.FolderAssetJSONEncoder
 
 # rest url for folders, the first level is meant to be folders only
 S3_BUCKET_FIRST_LEVEL = 'http://psyche-andromeda.s3.amazonaws.com/?delimiter=/'
@@ -27,12 +28,10 @@ def hello_world():
 
 
 def main():
-
     folders_list = retrieve_folder_list() #get a list of every folder...
     for folder in folders_list: #for every folder...
         folder_images_list = retrieve_folder_images_urls(folder) #get a list of images names...
-        image_urls_list = build_full_image_urls(folder_images_list) #then use the list of images names to generate a list of urls to those images
-        Folder_To_Its_Image_Urls_Dict[folder] = image_urls_list #finally map a folder to the list of images <key: folder name, value: list of urls of the images in the folder>
+        Folder_To_Its_Image_Urls_Dict[folder] = folder_images_list
     
 
 
@@ -53,7 +52,7 @@ def retrieve_folder_list():
 
 
 def retrieve_folder_images_urls(folderStr):
-    uoload_time_to_image_map = ordered_map
+    asset_list = []
     rest_url = S3_FOLDER_PREFIX_FILTERING_URL + folderStr
     request = Request(rest_url)
     try:
@@ -64,23 +63,15 @@ def retrieve_folder_images_urls(folderStr):
         for child in root:
             if child.tag == IMAGE_LEVEL_XML_TAG_TARGET:
                 if skip_folder_flag:
-                    print(child[0].text)
-                    print(child[1].text)
-                    folder_images_list.append(child[0].text)
-                    
+                    unix_timestamp = long(zulu.parse(child[1].text).timestamp())
+                    asset = folder_asset.FolderAsset(S3_BASE_URL + child[0].text, unix_timestamp)
+                    asset_list.append(asset)
                     
                 skip_folder_flag = True
-        return folder_images_list
+        return asset_list
 
     except URLError, error:
         print 'Got an error code:', error
-
-def build_full_image_urls(image_list):
-    full_image_url_list = []
-    for image_directory in image_list:
-        full_image_url_list.append(S3_BASE_URL+image_directory)
-    return full_image_url_list
-
 
 
 if __name__ == "__main__":

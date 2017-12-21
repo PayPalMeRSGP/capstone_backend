@@ -1,7 +1,7 @@
 import json
 
 class FolderAsset():
-    def __init__(self, upload_time, asset_url):
+    def __init__(self, asset_url, upload_time):
         self.upload_time = upload_time
         self.asset_url = asset_url
    
