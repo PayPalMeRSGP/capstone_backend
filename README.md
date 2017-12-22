@@ -10,8 +10,8 @@ documentation:
         {
             "asset_url": "<url to gallery asset in amazon s3, can be an image, video, GIF, etc.>",
             "text": "<corresponding decription of the asset found under the asset_url>",
-            "upload_time": <unix timestamp the upload, note that this is a long not an int>
-        }...
+            "upload_time": 123456789
+        }
     ]
 }
 ```
