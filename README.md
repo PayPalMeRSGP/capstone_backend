@@ -1,5 +1,6 @@
 # capstone_backend
 - GET [base_url]/everything
+    
     returns every asset in s3, use when user first installs app in JSON format. Upload time is a LONG representating unix time.
 
     documentation:
@@ -40,6 +41,6 @@
 
 -GET [base_url]/filter?=[unix_timestamp]
 
-    returns everything uploaded after the GET parameter, to be used when polling for any gallery updates. It is up the the client app to store their own last upload unix_timestamp.
+returns everything uploaded after the GET parameter, to be used when polling for any gallery updates. It is up the the client app to     store their own last upload unix_timestamp.
 
-    documentation: same format as GET [base_url]/everything
+documentation: same format as GET [base_url]/everything
