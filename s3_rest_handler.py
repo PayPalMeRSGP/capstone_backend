@@ -45,7 +45,7 @@ def retrieve_folder_list(url):
         root = ET.fromstring(first_level_response)
         for child in root:
             if child.tag == COMMONPREFIXES_XML_TAG_TARGET:
-                folders_list.append(child[0].text)
+                folders_list.append(child[0].text[:-1])
         return folders_list
 
     except URLError, error:
@@ -74,7 +74,7 @@ def retrieve_folder_images_urls(folder_str):
         images_response = urlopen(images_request)
         images_folder_response = images_response.read()
         images_root = ET.fromstring(images_folder_response)
-        skip_folder_flag = False
+        skip_folder_flag = False #skip the first entry
         idx = -1 #due to skipping first loop am not using enumerate, this idx is used for looping through the text_list_links list
         for child in images_root:
             if child.tag == CONTENTS_XML_TAG_TARGET:

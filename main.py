@@ -5,18 +5,31 @@ from flask import request
 import folder_asset
 import s3_rest_handler
 import platform
+import dyanmodb_handler
 
 app = Flask(__name__)
 app.json_encoder = folder_asset.FolderAssetJSONEncoder
 
-
 @app.route('/')
 def base_page_handler():
+    return "api:" \
+           "\n" \
+           "GET [base_url]/everything\n" \
+           "returns every asset in s3" \
+           "\n\n" \
+           "GET [base_url]/filter?=[unix_timestamp]\n" \
+           "returns every asset uploaded after [unix_timestamp] argument" \
+           "\n\n" \
+           "GET [base_url]/timeline \n" \
+           "returns the mission timeline"
+
+@app.route('/everything')
+def everything_page_handler():
     output = s3_rest_handler.retrieve_assets()
     return jsonify(output)
 
 @app.route('/filter')
-def unix_timestamp_get_request_handler():
+def filter_page_handler():
     s3_data = s3_rest_handler.retrieve_assets()
     s3_filtered_data = {}
     last_update_timestamp = request.args.get('last_update', default=0, type=long)
@@ -27,6 +40,10 @@ def unix_timestamp_get_request_handler():
                 s3_filtered_data[folder] = asset_list[idx:]
                 break
     return jsonify(s3_filtered_data)
+
+@app.route('/timeline')
+def timeline():
+    return dyanmodb_handler.getTimelineJSON()
 
 def main():
     if platform.system() == "Linux":
