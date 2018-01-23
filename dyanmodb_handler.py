@@ -4,8 +4,6 @@ import json
 import decimal
 from botocore.exceptions import ClientError
 
-access_key = "AKIAJC2BVGVB7DKERUZQ"
-secret_key = "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"
 
 # Helper class to convert a DynamoDB item to JSON.
 class DecimalEncoder(json.JSONEncoder):
@@ -20,7 +18,7 @@ class DecimalEncoder(json.JSONEncoder):
 
 
 def getTimelineJSON():
-    dynamodb = boto3.resource("dynamodb", aws_access_key_id=access_key, aws_secret_access_key=secret_key,
+    dynamodb = boto3.resource("dynamodb",
                               region_name='us-east-1')
     table = dynamodb.Table('CapstoneTimelineDB')
 
